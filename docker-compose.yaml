@@ -1,0 +1,46 @@
+services:
+  db:
+    container_name: db
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: practice
+      MYSQL_USER: hassan
+      MYSQL_PASSWORD: password
+    ports:
+      - "3334:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - moiznetwork
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  microservice:
+    container_name: springbasictemplate
+    build: .
+    environment:
+      SERVER_PORT: 8080
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: practice
+      DB_USER: hassan
+      DB_PASSWORD: password
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - moiznetwork
+    # restart: on-failure
+
+networks:
+  moiznetwork:
+    name: moiznetwork
+
+volumes:
+  mysql_data:
